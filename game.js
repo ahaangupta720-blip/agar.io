@@ -10,7 +10,7 @@ let camera = {x:0,y:0};
 
 let mouse = {x:0,y:0};
 
-document.addEventListener("mousemove",e=>{
+document.addEventListener("mousemove",(e)=>{
 mouse.x = e.clientX;
 mouse.y = e.clientY;
 });
@@ -20,7 +20,6 @@ name:"You",
 x:WORLD_SIZE/2,
 y:WORLD_SIZE/2,
 r:25,
-speed:4,
 color:"cyan"
 };
 
@@ -61,7 +60,7 @@ color:"red"
 
 }
 
-spawnBots(12);
+spawnBots(10);
 
 function dist(a,b){
 
@@ -78,10 +77,10 @@ function update(){
 let dx = mouse.x - canvas.width/2;
 let dy = mouse.y - canvas.height/2;
 
-player.x += dx*0.01*player.speed;
-player.y += dy*0.01*player.speed;
+player.x += dx*0.01;
+player.y += dy*0.01;
 
-// world bounds
+// keep inside world
 player.x = Math.max(0,Math.min(WORLD_SIZE,player.x));
 player.y = Math.max(0,Math.min(WORLD_SIZE,player.y));
 
@@ -107,45 +106,22 @@ bots.forEach(b=>{
 let target = null;
 let bestDist = Infinity;
 
-// chase food
 food.forEach(f=>{
 
 let d = dist(b,f);
 
 if(d < bestDist){
-
 bestDist = d;
 target = f;
-
 }
 
 });
 
-// avoid bigger players
-if(player.r > b.r*1.2){
-
-let dx = b.x-player.x;
-let dy = b.y-player.y;
-
-let d = Math.sqrt(dx*dx+dy*dy);
-
-if(d < 300){
-
-b.x += (dx/d)*b.speed*3;
-b.y += (dy/d)*b.speed*3;
-
-return;
-
-}
-
-}
-
-// move toward target food
+// move toward food
 if(target){
 
-let dx = target.x-b.x;
-let dy = target.y-b.y;
-
+let dx = target.x - b.x;
+let dy = target.y - b.y;
 let d = Math.sqrt(dx*dx+dy*dy);
 
 b.x += (dx/d)*b.speed;
@@ -153,7 +129,7 @@ b.y += (dy/d)*b.speed;
 
 }
 
-// bot eats food
+// eat food
 food.forEach((f,i)=>{
 
 if(dist(b,f) < b.r){
@@ -172,10 +148,8 @@ bots.forEach((b,i)=>{
 
 if(player.r > b.r*1.1 && dist(player,b) < player.r){
 
-player.r += b.r*0.2;
-
+player.r += b.r*0.3;
 bots.splice(i,1);
-
 spawnBots(1);
 
 }
@@ -188,23 +162,20 @@ bots.forEach(b=>{
 if(b.r > player.r*1.1 && dist(player,b) < b.r){
 
 alert("Game Over");
-
 location.reload();
 
 }
 
 });
 
-// keep food count stable
+// keep food amount stable
 if(food.length < 400){
-
 spawnFood(100);
-
 }
 
 }
 
-function drawWorld(){
+function drawGrid(){
 
 ctx.strokeStyle="#222";
 
@@ -237,39 +208,23 @@ ctx.arc(obj.x-camera.x,obj.y-camera.y,obj.r,0,Math.PI*2);
 ctx.fill();
 
 ctx.fillStyle="white";
-ctx.font="12px Arial";
 ctx.textAlign="center";
+ctx.font="12px Arial";
 
 ctx.fillText(obj.name,obj.x-camera.x,obj.y-camera.y);
 
 }
 
-function draw(){
-
-ctx.clearRect(0,0,canvas.width,canvas.height);
-
-drawWorld();
-
-food.forEach(f=>drawCircle(f));
-
-bots.forEach(b=>drawCircle(b));
-
-drawCircle(player);
-
-drawLeaderboard();
-
-}
-
 function drawLeaderboard(){
 
-let list = [player,...bots];
+let list=[player,...bots];
 
 list.sort((a,b)=>b.r-a.r);
 
 ctx.fillStyle="white";
 ctx.font="16px Arial";
 
-ctx.fillText("Leaderboard",canvas.width-140,40);
+ctx.fillText("Leaderboard",canvas.width-150,40);
 
 for(let i=0;i<5;i++){
 
@@ -277,13 +232,27 @@ if(list[i]){
 
 ctx.fillText(
 (i+1)+". "+list[i].name,
-canvas.width-140,
+canvas.width-150,
 70+i*20
 );
 
 }
 
 }
+
+}
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+drawGrid();
+
+food.forEach(f=>drawCircle(f));
+bots.forEach(b=>drawCircle(b));
+drawCircle(player);
+
+drawLeaderboard();
 
 }
 
@@ -298,9 +267,11 @@ requestAnimationFrame(gameLoop);
 
 gameLoop();
 
+// SAVE SYSTEM
+
 function generateSave(){
 
-const data = {
+const data={
 x:player.x,
 y:player.y,
 r:player.r
@@ -314,7 +285,7 @@ function loadSave(code){
 
 try{
 
-let data = JSON.parse(atob(code));
+let data=JSON.parse(atob(code));
 
 player.x=data.x;
 player.y=data.y;
@@ -325,5 +296,17 @@ player.r=data.r;
 alert("Invalid save");
 
 }
+
+}
+
+function saveGame(){
+
+document.getElementById("saveBox").value = generateSave();
+
+}
+
+function loadGame(){
+
+loadSave(document.getElementById("saveBox").value);
 
 }

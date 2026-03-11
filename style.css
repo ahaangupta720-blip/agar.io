@@ -2,8 +2,19 @@ body{
 margin:0;
 overflow:hidden;
 background:#111;
+font-family:Arial;
 }
 
 canvas{
 display:block;
+}
+
+#ui{
+position:fixed;
+bottom:10px;
+left:10px;
+background:#222;
+padding:10px;
+border-radius:6px;
+color:white;
 }
