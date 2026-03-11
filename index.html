@@ -2,14 +2,19 @@
 <html>
 <head>
 <title>Agar Clone</title>
-
 <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
 
 <canvas id="game"></canvas>
+
+<div id="ui">
+<button onclick="saveGame()">Save</button>
+<button onclick="loadGame()">Load</button>
+<br>
+<textarea id="saveBox" rows="3" cols="40"></textarea>
+</div>
 
 <script src="game.js"></script>
 
