@@ -73,22 +73,18 @@ return Math.sqrt(dx*dx+dy*dy);
 
 function update(){
 
-// player movement
 let dx = mouse.x - canvas.width/2;
 let dy = mouse.y - canvas.height/2;
 
 player.x += dx*0.01;
 player.y += dy*0.01;
 
-// keep inside world
 player.x = Math.max(0,Math.min(WORLD_SIZE,player.x));
 player.y = Math.max(0,Math.min(WORLD_SIZE,player.y));
 
-// camera follow
 camera.x = player.x - canvas.width/2;
 camera.y = player.y - canvas.height/2;
 
-// player eats food
 food.forEach((f,i)=>{
 
 if(dist(player,f) < player.r){
@@ -100,7 +96,6 @@ food.splice(i,1);
 
 });
 
-// bot AI
 bots.forEach(b=>{
 
 let target = null;
@@ -117,7 +112,6 @@ target = f;
 
 });
 
-// move toward food
 if(target){
 
 let dx = target.x - b.x;
@@ -129,7 +123,6 @@ b.y += (dy/d)*b.speed;
 
 }
 
-// eat food
 food.forEach((f,i)=>{
 
 if(dist(b,f) < b.r){
@@ -143,7 +136,6 @@ food.splice(i,1);
 
 });
 
-// player eats bots
 bots.forEach((b,i)=>{
 
 if(player.r > b.r*1.1 && dist(player,b) < player.r){
@@ -156,7 +148,6 @@ spawnBots(1);
 
 });
 
-// bots eat player
 bots.forEach(b=>{
 
 if(b.r > player.r*1.1 && dist(player,b) < b.r){
@@ -168,7 +159,6 @@ location.reload();
 
 });
 
-// keep food amount stable
 if(food.length < 400){
 spawnFood(100);
 }
@@ -207,11 +197,15 @@ ctx.beginPath();
 ctx.arc(obj.x-camera.x,obj.y-camera.y,obj.r,0,Math.PI*2);
 ctx.fill();
 
+if(obj.name){
+
 ctx.fillStyle="white";
 ctx.textAlign="center";
 ctx.font="12px Arial";
 
 ctx.fillText(obj.name,obj.x-camera.x,obj.y-camera.y);
+
+}
 
 }
 
@@ -266,8 +260,6 @@ requestAnimationFrame(gameLoop);
 }
 
 gameLoop();
-
-// SAVE SYSTEM
 
 function generateSave(){
 
