@@ -22,6 +22,13 @@ r:25,
 color:"cyan"
 };
 
+let difficultyLevel = 1;
+let foodCounter = 0;
+let foodNeeded = 1;
+
+let levelUpTimer = 0;
+let levelUpText = "";
+
 let food = [];
 let bots = [];
 
@@ -59,7 +66,27 @@ let dy=a.y-b.y;
 return Math.sqrt(dx*dx+dy*dy);
 }
 
+function updateDifficulty(){
+
+let newLevel = Math.floor(player.r / 700) + 1;
+
+if(newLevel > difficultyLevel){
+
+difficultyLevel = newLevel;
+
+foodNeeded = Math.pow(2,difficultyLevel-1);
+
+levelUpTimer = 120;
+
+levelUpText = "LEVEL " + difficultyLevel;
+
+}
+
+}
+
 function update(){
+
+updateDifficulty();
 
 let dx = mouse.x - canvas.width/2;
 let dy = mouse.y - canvas.height/2;
@@ -74,10 +101,20 @@ camera.x = player.x - canvas.width/2;
 camera.y = player.y - canvas.height/2;
 
 food.forEach((f,i)=>{
+
 if(dist(player,f) < player.r){
-player.r += 0.4;
-food.splice(i,1);
+
+foodCounter++;
+
+if(foodCounter >= foodNeeded){
+player.r += 1;
+foodCounter = 0;
 }
+
+food.splice(i,1);
+
+}
+
 });
 
 bots.forEach(b=>{
@@ -114,18 +151,27 @@ food.splice(i,1);
 });
 
 bots.forEach((b,i)=>{
+
 if(player.r > b.r*1.1 && dist(player,b) < player.r){
+
 player.r += b.r*0.3;
+
 bots.splice(i,1);
 spawnBots(1);
+
 }
+
 });
 
 bots.forEach(b=>{
+
 if(b.r > player.r*1.1 && dist(player,b) < b.r){
+
 alert("Game Over");
 location.reload();
+
 }
+
 });
 
 if(food.length < 400){
@@ -139,17 +185,21 @@ function drawGrid(){
 ctx.strokeStyle="#222";
 
 for(let x=0;x<WORLD_SIZE;x+=100){
+
 ctx.beginPath();
 ctx.moveTo(x-camera.x,0-camera.y);
 ctx.lineTo(x-camera.x,WORLD_SIZE-camera.y);
 ctx.stroke();
+
 }
 
 for(let y=0;y<WORLD_SIZE;y+=100){
+
 ctx.beginPath();
 ctx.moveTo(0-camera.x,y-camera.y);
 ctx.lineTo(WORLD_SIZE-camera.x,y-camera.y);
 ctx.stroke();
+
 }
 
 }
@@ -163,10 +213,13 @@ ctx.arc(obj.x-camera.x,obj.y-camera.y,obj.r,0,Math.PI*2);
 ctx.fill();
 
 if(obj.name){
+
 ctx.fillStyle="white";
 ctx.textAlign="center";
 ctx.font="12px Arial";
+
 ctx.fillText(obj.name,obj.x-camera.x,obj.y-camera.y);
+
 }
 
 }
@@ -200,6 +253,19 @@ canvas.width-170,
 
 }
 
+function drawDifficulty(){
+
+ctx.fillStyle="white";
+ctx.font="18px Arial";
+
+ctx.fillText(
+"Level: "+difficultyLevel+" | Food/Size: "+foodNeeded,
+20,
+30
+);
+
+}
+
 function drawMinimap(){
 
 let size = 150;
@@ -217,15 +283,58 @@ let scale = size / WORLD_SIZE;
 
 ctx.fillStyle="cyan";
 ctx.beginPath();
-ctx.arc(x + player.x*scale, y + player.y*scale,4,0,Math.PI*2);
+ctx.arc(
+x + player.x*scale,
+y + player.y*scale,
+4,
+0,
+Math.PI*2
+);
 ctx.fill();
 
 ctx.fillStyle="red";
 bots.forEach(b=>{
 ctx.beginPath();
-ctx.arc(x + b.x*scale, y + b.y*scale,3,0,Math.PI*2);
+ctx.arc(
+x + b.x*scale,
+y + b.y*scale,
+3,
+0,
+Math.PI*2
+);
 ctx.fill();
 });
+
+}
+
+function drawLevelUp(){
+
+if(levelUpTimer > 0){
+
+ctx.fillStyle="rgba(0,0,0,0.5)";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+ctx.fillStyle="yellow";
+ctx.textAlign="center";
+ctx.font="60px Arial";
+
+ctx.fillText(
+"LEVEL UP!",
+canvas.width/2,
+canvas.height/2-40
+);
+
+ctx.font="40px Arial";
+
+ctx.fillText(
+levelUpText,
+canvas.width/2,
+canvas.height/2+20
+);
+
+levelUpTimer--;
+
+}
 
 }
 
@@ -241,6 +350,8 @@ drawCircle(player);
 
 drawLeaderboard();
 drawMinimap();
+drawDifficulty();
+drawLevelUp();
 
 }
 
@@ -253,29 +364,46 @@ requestAnimationFrame(gameLoop);
 gameLoop();
 
 function generateSave(){
+
 const data={
 x:player.x,
 y:player.y,
-r:player.r
+r:player.r,
+difficultyLevel:difficultyLevel
 };
+
 return btoa(JSON.stringify(data));
+
 }
 
 function loadSave(code){
+
 try{
+
 let data=JSON.parse(atob(code));
+
 player.x=data.x;
 player.y=data.y;
 player.r=data.r;
+
+difficultyLevel=data.difficultyLevel || 1;
+
 }catch{
+
 alert("Invalid save");
+
 }
+
 }
 
 function saveGame(){
+
 document.getElementById("saveBox").value = generateSave();
+
 }
 
 function loadGame(){
+
 loadSave(document.getElementById("saveBox").value);
+
 }
