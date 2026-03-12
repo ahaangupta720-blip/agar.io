@@ -5,6 +5,8 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const WORLD_SIZE = 4000;
+const LEVEL_GOAL = 700;
+const START_SIZE = 25;
 
 let camera = {x:0,y:0};
 let mouse = {x:0,y:0};
@@ -18,7 +20,7 @@ let player = {
 name:"You",
 x:WORLD_SIZE/2,
 y:WORLD_SIZE/2,
-r:25,
+r:START_SIZE,
 color:"cyan"
 };
 
@@ -66,27 +68,28 @@ let dy=a.y-b.y;
 return Math.sqrt(dx*dx+dy*dy);
 }
 
-function updateDifficulty(){
+function levelUp(){
 
-let newLevel = Math.floor(player.r / 700) + 1;
-
-if(newLevel > difficultyLevel){
-
-difficultyLevel = newLevel;
+difficultyLevel++;
 
 foodNeeded = Math.pow(2,difficultyLevel-1);
 
 levelUpTimer = 120;
-
 levelUpText = "LEVEL " + difficultyLevel;
 
-}
+// reset size
+player.r = START_SIZE;
+
+foodCounter = 0;
 
 }
 
 function update(){
 
-updateDifficulty();
+// LEVEL CHECK
+if(player.r >= LEVEL_GOAL){
+levelUp();
+}
 
 let dx = mouse.x - canvas.width/2;
 let dy = mouse.y - canvas.height/2;
@@ -259,7 +262,9 @@ ctx.fillStyle="white";
 ctx.font="18px Arial";
 
 ctx.fillText(
-"Level: "+difficultyLevel+" | Food/Size: "+foodNeeded,
+"Level: "+difficultyLevel+
+" | Goal: "+LEVEL_GOAL+
+" | Food/Size: "+foodNeeded,
 20,
 30
 );
@@ -368,8 +373,7 @@ function generateSave(){
 const data={
 x:player.x,
 y:player.y,
-r:player.r,
-difficultyLevel:difficultyLevel
+level:difficultyLevel
 };
 
 return btoa(JSON.stringify(data));
@@ -384,9 +388,12 @@ let data=JSON.parse(atob(code));
 
 player.x=data.x;
 player.y=data.y;
-player.r=data.r;
 
-difficultyLevel=data.difficultyLevel || 1;
+difficultyLevel=data.level || 1;
+
+foodNeeded = Math.pow(2,difficultyLevel-1);
+
+player.r = START_SIZE;
 
 }catch{
 
@@ -397,13 +404,9 @@ alert("Invalid save");
 }
 
 function saveGame(){
-
 document.getElementById("saveBox").value = generateSave();
-
 }
 
 function loadGame(){
-
 loadSave(document.getElementById("saveBox").value);
-
 }
