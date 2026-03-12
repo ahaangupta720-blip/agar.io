@@ -7,7 +7,6 @@ canvas.height = window.innerHeight;
 const WORLD_SIZE = 4000;
 
 let camera = {x:0,y:0};
-
 let mouse = {x:0,y:0};
 
 document.addEventListener("mousemove",(e)=>{
@@ -95,12 +94,14 @@ target = f;
 });
 
 if(target){
+
 let dx = target.x - b.x;
 let dy = target.y - b.y;
 let d = Math.sqrt(dx*dx+dy*dy);
 
 b.x += (dx/d)*b.speed;
 b.y += (dy/d)*b.speed;
+
 }
 
 food.forEach((f,i)=>{
@@ -173,21 +174,28 @@ ctx.fillText(obj.name,obj.x-camera.x,obj.y-camera.y);
 function drawLeaderboard(){
 
 let list=[player,...bots];
+
 list.sort((a,b)=>b.r-a.r);
 
 ctx.fillStyle="white";
 ctx.font="16px Arial";
 
-ctx.fillText("Leaderboard",canvas.width-150,40);
+ctx.fillText("Leaderboard",canvas.width-170,40);
 
 for(let i=0;i<5;i++){
+
 if(list[i]){
+
+let size = Math.round(list[i].r);
+
 ctx.fillText(
-(i+1)+". "+list[i].name,
-canvas.width-150,
+(i+1)+". "+list[i].name+" ("+size+")",
+canvas.width-170,
 70+i*20
 );
+
 }
+
 }
 
 }
@@ -207,29 +215,15 @@ ctx.strokeRect(x,y,size,size);
 
 let scale = size / WORLD_SIZE;
 
-// player
 ctx.fillStyle="cyan";
 ctx.beginPath();
-ctx.arc(
-x + player.x*scale,
-y + player.y*scale,
-4,
-0,
-Math.PI*2
-);
+ctx.arc(x + player.x*scale, y + player.y*scale,4,0,Math.PI*2);
 ctx.fill();
 
-// bots
 ctx.fillStyle="red";
 bots.forEach(b=>{
 ctx.beginPath();
-ctx.arc(
-x + b.x*scale,
-y + b.y*scale,
-3,
-0,
-Math.PI*2
-);
+ctx.arc(x + b.x*scale, y + b.y*scale,3,0,Math.PI*2);
 ctx.fill();
 });
 
